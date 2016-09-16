@@ -1,0 +1,9 @@
+jar {
+    baseName = 'rest'
+    version = '0.0.1-SNAPSHOT'
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+}

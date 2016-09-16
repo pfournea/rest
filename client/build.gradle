@@ -1,0 +1,12 @@
+jar {
+    baseName = 'rest-client'
+    version = '0.0.1-SNAPSHOT'
+}
+
+bootRepackage {
+    enabled = false
+}
+
+dependencies {
+    compile('org.springframework:spring-web')
+}
