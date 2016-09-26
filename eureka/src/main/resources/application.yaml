@@ -1,0 +1,12 @@
+server:
+  port: 9000
+  context-path: /${spring.application.name}
+
+spring:
+  application:
+    name: 'eurekaserver'
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
