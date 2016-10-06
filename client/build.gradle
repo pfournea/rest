@@ -9,4 +9,5 @@ bootRepackage {
 
 dependencies {
     compile('org.springframework:spring-web')
+    compile('org.springframework.cloud:spring-cloud-commons')
 }
