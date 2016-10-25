@@ -26,4 +26,9 @@ public class ApplicationController {
         return resourceRepository.getResourceById(resourceId).get();
     }
 
+    @RequestMapping(value = "/api/boereleute")
+    public String getPipi() {
+        return "boereleute";
+    }
+
 }

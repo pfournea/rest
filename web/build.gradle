@@ -7,4 +7,5 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.cloud:spring-cloud-starter-eureka')
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    testCompile project(':client')
 }

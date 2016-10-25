@@ -3,17 +3,19 @@ package be.github.pfournea.rest.client;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.http.*;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * Created by Peter on 16/09/2016.
  */
-public class RestClient<T> {
+public class RestClient {
     @Value("${restapi.zuulurl}")
     private String zuulUrl;
     @Value("${restapi.eurekaurl}")
@@ -22,7 +24,6 @@ public class RestClient<T> {
     @Value("${restapi.mediatype}")
     private String mediaType;
 
-    private Class<T> classOfT;
 
     private RestTemplate restTemplate;
 
@@ -30,16 +31,23 @@ public class RestClient<T> {
         this.restTemplate = restTemplate;
     }
 
-    public <T> T getById(UUID id,Class<T> type){
+    public <T> T getById(UUID id,Class<T> classOfT){
+        return getById(id, classOfT, () -> selectAppropriateUrl());
+    }
+
+    public <T> T getById(UUID id, Class<T> classOfT, String hostName, String port) {
+        return getById(id, classOfT,() -> String.format("http://%s:%s/rest", hostName, port));
+    }
+
+    private <T> T getById(UUID id, Class<T> classOfT, Supplier<String> supplier) {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.valueOf(mediaType)));
         HttpEntity httpEntity = new HttpEntity(headers);
         UriComponents uriComponents = UriComponentsBuilder
-                .fromUriString(selectAppropriateUrl())
-                .path("/api/resource/")
+                .fromUriString(supplier.get())
                 .pathSegment("api", "resource", id.toString())
                 .build();
-        ResponseEntity<T> exchange = (ResponseEntity<T>) restTemplate.exchange(uriComponents.toUri(), HttpMethod.GET, httpEntity, classOfT);
+        ResponseEntity<T> exchange = restTemplate.exchange(uriComponents.toUri(), HttpMethod.GET, httpEntity, classOfT);
         return exchange.getBody();
     }
 
