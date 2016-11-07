@@ -2,7 +2,9 @@ package be.github.pfournea.rest.client;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor;
 import org.springframework.http.*;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -16,14 +18,10 @@ import java.util.function.Supplier;
  * Created by Peter on 16/09/2016.
  */
 public class RestClient {
-    @Value("${restapi.zuulurl}")
+    @Value("${restapi.zuulurl:#{null}}")
     private String zuulUrl;
-    @Value("${restapi.eurekaurl}")
+    @Value("${restapi.eurekaurl:#{null}}")
     private String eurekaUrl;
-
-    @Value("${restapi.mediatype}")
-    private String mediaType;
-
 
     private RestTemplate restTemplate;
 
@@ -31,17 +29,25 @@ public class RestClient {
         this.restTemplate = restTemplate;
     }
 
-    public <T> T getById(UUID id,Class<T> classOfT){
-        return getById(id, classOfT, () -> selectAppropriateUrl());
+    public <T> T getById(UUID id, Class<T> classOfT) {
+        return getById(id, classOfT, () -> selectAppropriateUrl(), MediaType.APPLICATION_JSON);
+    }
+
+    public <T> T getById(UUID id, Class<T> classOfT, MediaType mediaType) {
+        return getById(id, classOfT, () -> selectAppropriateUrl(), mediaType);
     }
 
     public <T> T getById(UUID id, Class<T> classOfT, String hostName, String port) {
-        return getById(id, classOfT,() -> String.format("http://%s:%s/rest", hostName, port));
+        return getById(id, classOfT, () -> String.format("http://%s:%s/rest", hostName, port), MediaType.APPLICATION_JSON);
     }
 
-    private <T> T getById(UUID id, Class<T> classOfT, Supplier<String> supplier) {
+    public <T> T getById(UUID id, Class<T> classOfT, String hostName, String port, MediaType mediaType) {
+        return getById(id, classOfT, () -> String.format("http://%s:%s/rest", hostName, port), mediaType);
+    }
+
+    private <T> T getById(UUID id, Class<T> classOfT, Supplier<String> supplier, MediaType mediaType) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.valueOf(mediaType)));
+        headers.setAccept(Arrays.asList(mediaType));
         HttpEntity httpEntity = new HttpEntity(headers);
         UriComponents uriComponents = UriComponentsBuilder
                 .fromUriString(supplier.get())
@@ -52,7 +58,17 @@ public class RestClient {
     }
 
     private String selectAppropriateUrl() {
-        LoadBalanced[] declaredAnnotationsByType = restTemplate.getClass().getDeclaredAnnotationsByType(LoadBalanced.class);
-        return declaredAnnotationsByType.length > 0 ? eurekaUrl : zuulUrl;
+        if (ClassUtils.isPresent("org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor", ClassUtils.getDefaultClassLoader())) {
+            boolean loadbalancerInterceptorFound = restTemplate.getInterceptors().stream().filter(clientHttpRequestInterceptor -> {
+                try {
+                    return Class.forName("org.springframework.cloud.client.loadbalancer.LoadBalancerInterceptor").isInstance(clientHttpRequestInterceptor);
+                } catch (ClassNotFoundException e) {
+                    return false;
+                }
+            }).findAny().isPresent();
+            return loadbalancerInterceptorFound ? eurekaUrl : zuulUrl;
+        } else {
+            return zuulUrl;
+        }
     }
 }

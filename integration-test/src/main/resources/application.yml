@@ -1,0 +1,22 @@
+server:
+  port: 8081
+  context-path: /${spring.application.name}
+
+spring:
+  application:
+    name: integration-test
+
+restapi:
+  eurekaurl: http://rest/rest
+
+eureka:
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:9000/eurekaserver/eureka/
+
+ribbon:
+  http:
+    client:
+      enabled: false
