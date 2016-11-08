@@ -1,0 +1,12 @@
+server:
+  port: 9001
+  context-path: /${spring.application.name}
+
+spring:
+  application:
+    name: 'zuul'
+
+zuul:
+  routes:
+    google:
+      url: https://www.google.be

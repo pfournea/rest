@@ -1,1 +1,1 @@
-include 'web', 'client', 'eureka', 'integration-test'
+include 'web', 'client', 'eureka', 'integration-test', 'zuul'
