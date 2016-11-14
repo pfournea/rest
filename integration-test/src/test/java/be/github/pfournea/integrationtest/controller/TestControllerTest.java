@@ -24,9 +24,20 @@ public class TestControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+
+
     @Test
-    public void testController() {
+    public void retrieveDataByEureka() {
         ResponseEntity<TestController.ResponseDto> response = restTemplate.getForEntity("/api/test", TestController.ResponseDto.class);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).hasNoNullFieldsOrProperties();
+        assertThat(response.getBody()).hasFieldOrProperty("description");
+        assertThat(response.getBody()).hasFieldOrProperty("name");
+    }
+
+    @Test
+    public void retrieveDataByZuul() {
+        ResponseEntity<TestController.ResponseDto> response = restTemplate.getForEntity("/api/zuultest", TestController.ResponseDto.class);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody()).hasNoNullFieldsOrProperties();
         assertThat(response.getBody()).hasFieldOrProperty("description");

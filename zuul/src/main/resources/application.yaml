@@ -10,3 +10,14 @@ zuul:
   routes:
     google:
       url: https://www.google.be
+    rest:
+      path: /rest/**
+      serviceId: rest
+      retryable: true
+
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://localhost:9000/eurekaserver/eureka/
